@@ -7,8 +7,11 @@ const productRoutes = require('./api/routes/products');
 const orderRoutes = require('./api/routes/orders');
 
 mongoose.connect(
-  `mongodb+srv://mako:${process.env.MONGO_ATLAS_PW}@node-rest-k9mgy.mongodb.net/test?retryWrites=true&w=majority`,
-  { useMongoClient: true }
+  `mongodb+srv://${process.env.MONGO_ATLAS_USER}:${process.env.MONGO_ATLAS_PW}@node-rest-k9mgy.mongodb.net/test?retryWrites=true&w=majority`,
+  {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  }
 );
 
 app.use(bodyParser.urlencoded({ extended: false }));
