@@ -2,6 +2,10 @@ const express = require('express');
 
 const router = express.Router();
 
+const mongsoose = require('mongoose');
+
+const Product = require('../models/products');
+
 router.get('/', (req, res, next) => {
   res.status(200).json({
     message: 'Handling GET /products'
