@@ -10,6 +10,7 @@ const Product = require('../models/products');
 router.get('/', (req, res, next) => {
   Order.find()
     .select('product quantity _id')
+    .populate('product', 'name price')
     .exec()
     .then(docs => {
       const response = {
@@ -28,8 +29,6 @@ router.get('/', (req, res, next) => {
 router.post('/', (req, res, next) => {
   Product.findById(req.body.productId)
     .then(product => {
-      console.log(req.body.productId);
-
       if (!product) {
         return res.status(500).json({
           message: 'Product does not exist'
@@ -38,7 +37,7 @@ router.post('/', (req, res, next) => {
       const order = new Order({
         _id: mongsoose.Types.ObjectId(),
         quantity: req.body.quantity,
-        product: req.body.productId
+        product: product
       });
       return order.save();
     })
@@ -63,6 +62,7 @@ router.post('/', (req, res, next) => {
 
 router.get('/:orderId', (req, res, next) => {
   Order.findById(req.params.orderId)
+    .populate('product', 'name price')
     .exec()
     .then(order => {
       if (!order) {
