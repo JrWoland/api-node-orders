@@ -5,6 +5,7 @@ const router = express.Router();
 const mongsoose = require('mongoose');
 
 const Order = require('../models/orders');
+const Product = require('../models/products');
 
 router.get('/', (req, res, next) => {
   Order.find()
@@ -25,13 +26,22 @@ router.get('/', (req, res, next) => {
 });
 
 router.post('/', (req, res, next) => {
-  const order = new Order({
-    _id: mongsoose.Types.ObjectId(),
-    quantity: req.body.quantity,
-    product: req.body.productId
-  });
-  order
-    .save()
+  Product.findById(req.body.productId)
+    .then(product => {
+      console.log(req.body.productId);
+
+      if (!product) {
+        return res.status(500).json({
+          message: 'Product does not exist'
+        });
+      }
+      const order = new Order({
+        _id: mongsoose.Types.ObjectId(),
+        quantity: req.body.quantity,
+        product: req.body.productId
+      });
+      return order.save();
+    })
     .then(result => {
       console.log(result);
       res.status(201).json({
@@ -52,16 +62,27 @@ router.post('/', (req, res, next) => {
 });
 
 router.get('/:orderId', (req, res, next) => {
-  res.status(200).json({
-    message: 'Order details',
-    orderId: req.params.orderId
-  });
+  Order.findById(req.params.orderId)
+    .exec()
+    .then(order => {
+      if (!order) {
+        return res.status(404).json({ message: 'Order not found' });
+      }
+      res.status(200).json({
+        order: order
+      });
+    })
+    .catch(err => res.status(500).json({ error: err }));
 });
 router.delete('/:orderId', (req, res, next) => {
-  res.status(200).json({
-    message: 'Order deleted',
-    orderId: req.params.orderId
-  });
+  Order.remove({ _id: req.params.orderId })
+    .exec()
+    .then(result =>
+      res.status(200).json({
+        message: `Order deleted ${req.params.orderId}`
+      })
+    )
+    .catch(err => res.status(500).json({ error: err }));
 });
 
 module.exports = router;
