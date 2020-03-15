@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 
 const productRoutes = require('./api/routes/products');
 const orderRoutes = require('./api/routes/orders');
+const userRoutes = require('./api/routes/users');
 
 mongoose.connect(
   `mongodb+srv://${process.env.MONGO_ATLAS_USER}:${process.env.MONGO_ATLAS_PW}@node-rest-k9mgy.mongodb.net/test?retryWrites=true&w=majority`,
@@ -14,7 +15,6 @@ mongoose.connect(
   }
 );
 
-app.use('/uploads/images', express.static('uploads/images'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
@@ -32,8 +32,10 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use('/uploads/images', express.static('uploads/images'));
 app.use('/products', productRoutes);
 app.use('/orders', orderRoutes);
+app.use('/user', userRoutes);
 
 app.use((req, res, next) => {
   const error = new Error('Not found');
@@ -41,12 +43,11 @@ app.use((req, res, next) => {
   next(error);
 });
 
-app.use((error, req, res, next) => {
-  res.status(error.status || 500);
+app.use((err, req, res, next) => {
+  res.status(err.status || 500);
   res.json({
-    error: {
-      message: error.message + '[APP]'
-    }
+    message: 'Could not found a proper route',
+    error: err
   });
 });
 
