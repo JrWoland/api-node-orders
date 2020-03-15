@@ -12,7 +12,7 @@ const storage = multer.diskStorage({
   },
   filename: function(req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + file.originalname);
+    cb(null, `${uniqueSuffix} ${file.originalname}`);
   }
 });
 
@@ -36,23 +36,21 @@ const Product = require('../models/products');
 
 router.get('/', (req, res, next) => {
   Product.find()
-    .select('name price _id')
+    .select('name price _id productImage')
     .exec()
     .then(docs => {
-      console.log(req);
       const response = {
         count: docs.length,
         products: docs.map(doc => ({
+          _id: doc._id,
           name: doc.name,
           price: doc.price,
-          id: doc._id,
-          request: { type: req.method }
+          productImage: doc.productImage
         }))
       };
       res.status(200).json(response);
     })
     .catch(err => {
-      console.log(err);
       res.status(500).json({ error: err });
     });
 });
@@ -61,24 +59,24 @@ router.post('/', upload.single('productImage'), (req, res, next) => {
   const product = new Product({
     _id: new mongsoose.Types.ObjectId(),
     name: req.body.name,
-    price: req.body.price
+    price: req.body.price,
+    productImage: req.file.path
   });
 
   product
     .save()
     .then(result => {
-      console.log(result);
       res.status(201).json({
-        message: 'Product created ',
+        message: 'Product created',
         createdProduct: {
+          _id: result._id,
           name: result.name,
           price: result.price,
-          id: result._id
+          productImage: result.productImage
         }
       });
     })
     .catch(err => {
-      console.log(err);
       res.status(500).json({ error: err });
     });
 });
@@ -86,6 +84,7 @@ router.post('/', upload.single('productImage'), (req, res, next) => {
 router.get('/:productId', (req, res, next) => {
   const id = req.params.productId;
   Product.findById(id)
+    .select('name price _id productImage')
     .exec()
     .then(doc => {
       console.log(doc);
@@ -97,7 +96,6 @@ router.get('/:productId', (req, res, next) => {
       }
     })
     .catch(err => {
-      console.log(err);
       res.status(500).json({ error: err });
     });
 });
@@ -119,7 +117,6 @@ router.patch('/:productId', (req, res, next) => {
       });
     })
     .catch(err => {
-      console.log(err);
       res.status(500).json({ error: err });
     });
 });
@@ -135,7 +132,6 @@ router.delete('/:productId', (req, res, next) => {
       });
     })
     .catch(err => {
-      console.log(err);
       res.status(500).json({ error: err });
     });
 });

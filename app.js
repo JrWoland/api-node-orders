@@ -14,6 +14,7 @@ mongoose.connect(
   }
 );
 
+app.use('/uploads/images', express.static('uploads/images'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
