@@ -7,7 +7,9 @@ const mongsoose = require('mongoose');
 const Order = require('../models/orders');
 const Product = require('../models/products');
 
-router.get('/', (req, res, next) => {
+const checkAuth = require('../auth/check-auth');
+
+router.get('/', checkAuth, (req, res, next) => {
   Order.find()
     .select('product quantity _id')
     .populate('product', 'name price')
@@ -26,7 +28,7 @@ router.get('/', (req, res, next) => {
     .catch(err => res.status(500).json({ error: err }));
 });
 
-router.post('/', (req, res, next) => {
+router.post('/', checkAuth, (req, res, next) => {
   Product.findById(req.body.productId)
     .then(product => {
       if (!product) {
@@ -60,7 +62,7 @@ router.post('/', (req, res, next) => {
     });
 });
 
-router.get('/:orderId', (req, res, next) => {
+router.get('/:orderId', checkAuth, (req, res, next) => {
   Order.findById(req.params.orderId)
     .populate('product', 'name price')
     .exec()
